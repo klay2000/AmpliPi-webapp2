@@ -10,6 +10,9 @@
   * Swich to Spotifyd Spotify client
   * Add MPRIS metadata/command interface
   * Add LMS Client
+* Streamer
+  * Added support for EEPROMS on boards to identify board type and revision
+  * Added support for units without zones
 
 ## 0.1.9
 * Web App
