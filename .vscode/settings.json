@@ -31,5 +31,6 @@
     // and updates this list every time a .h file is opened.
     // This setting just forces all *.h files to be treated as C files.
     "*.h": "c"
-  }
+  },
+  "cmake.configureOnOpen": false
 }
