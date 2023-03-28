@@ -11,6 +11,7 @@ class Stream {
   }
 }
 const STREAM_TYPES_ = {
+  inputplayback:  new Stream("inputplayback", "Input Playback"),
   airplay:        new Stream("airplay", "AirPlay Device"),
   dlna:           new Stream("dlna", "DLNA"),
   fmradio:        new Stream("fmradio", "FM Radio Station"),
@@ -166,6 +167,16 @@ $(function() {
             <input type="checkbox" name="ap2" id="airplay_ap2" value="true"${s.ap2 ? " checked" : ""} aria-describedby="ap2Help" data-required="true">
             <label for="airplay_ap2">Airplay2</label>
             <small id="ap2Help" class="form-text text-muted">Make this stream Airplay2; only one Airplay2 stream can be running at a time.</small>
+          </div>
+        `;
+        break;
+      case STREAM_TYPES_.inputplayback:
+        html += `
+          <div class="form-group">
+            <input type="hidden" value="false" name="optical">
+            <input type="checkbox" name="optical" id="inputplayback_optical" value="true"${s.optical ? " checked" : ""} aria-describedby="opticalHelp" data-required="true">
+            <label for="inputplayback_optical">Optical</label>
+            <small id="opticalHelp" class="form-text text-muted">Check to make this Stream get input from optical in instead of aux. Only one can be used at a time.</small>
           </div>
         `;
         break;

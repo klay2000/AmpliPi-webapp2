@@ -865,6 +865,76 @@ class Plexamp(BaseStream):
     source.track = "Not currently supported"
     return source
 
+class InputPlayback(BaseStream):
+  """ A stream to play from the aux/optical input. """
+  def __init__(self, name: str, optical: bool, disabled: bool = False, mock: bool = False):
+    super().__init__('input playback', name, disabled=disabled, mock=mock)
+    self.optical = optical
+    self.bkg_thread = None
+
+  def reconfig(self, **kwargs):
+    reconnect_needed = False
+    if 'disabled' in kwargs:
+      self.disabled = kwargs['disabled']
+    if 'name' in kwargs:
+      self.name = kwargs['name']
+    if 'optical' in kwargs:
+      self.optical = kwargs['optical']
+      reconnect_needed = True
+    if reconnect_needed:
+      last_src = self.src
+      self.disconnect()
+      time.sleep(0.1) # delay a bit, is this needed?
+      self.connect(last_src)
+
+  def connect(self, src):
+    """ Connect a short run VLC process with audio output to audio source """
+    print(f'connecting {self.name} to {src}...')
+
+    if self.mock:
+      self._connect(src)
+      # make a thread that waits for a couple of secends and returns after setting info to stopped
+      self.bkg_thread = threading.Thread(target=self.wait_on_proc)
+      self.bkg_thread.start()
+      return
+
+    # Set input source
+    print(f'setting input source to {"optical" if self.optical else "aux"}...')
+    subprocess.check_call(['amixer', '-D', 'usb71' 'set', "'PCM Capture Source',0", 'IEC958' if self.optical else 'Line'],
+                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    # Start audio via runvlc.py
+    vlc_args = f'cvlc -A alsa --alsa-audio-device {utils.output_device(src)} alsa://plughw:cmedia8chint,0 vlc://quit'
+    print(f'running: {vlc_args}')
+    self.proc = subprocess.Popen(args=vlc_args.split(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    self._connect(src)
+    # make a thread that waits for a couple of secends and returns after setting info to stopped
+    self.bkg_thread = threading.Thread(target=self.wait_on_proc)
+    self.bkg_thread.start()
+    return
+
+  def wait_on_proc(self):
+    """ Wait for the vlc process to finish """
+    if self.proc is not None:
+      self.proc.wait() # TODO: add a time here
+    else:
+      time.sleep(0.3) # handles mock case
+    self.state = 'stopped' # notify that the audio is done playing
+
+  def disconnect(self):
+    if self._is_running():
+      self.proc.kill()
+      if self.bkg_thread:
+        self.bkg_thread.join()
+    self.proc = None
+    self._disconnect()
+
+  def info(self) -> models.SourceInfo:
+    source = models.SourceInfo(name=self.full_name(),
+                               state=self.state,
+                               img_url=f'static/imgs/{"optical" if self.optical else "aux"}_in.png')
+    return source
+
 class FilePlayer(BaseStream):
   """ An Single one shot file player - initially intended for use as a part of the PA Announcements """
   def __init__(self, name: str, url: str, disabled: bool = False, mock: bool = False):
@@ -1199,7 +1269,7 @@ class Bluetooth(BaseStream):
 
 # Simple handling of stream types before we have a type heirarchy
 AnyStream = Union[RCA, AirPlay, Spotify, InternetRadio, DLNA, Pandora, Plexamp,
-                  FilePlayer, FMRadio, LMS, Bluetooth]
+                  InputPlayback, FilePlayer, FMRadio, LMS, Bluetooth]
 
 def build_stream(stream: models.Stream, mock=False) -> AnyStream:
   """ Build a stream from the generic arguments given in stream, discriminated by stream.type
@@ -1224,6 +1294,8 @@ def build_stream(stream: models.Stream, mock=False) -> AnyStream:
     return InternetRadio(name, args['url'], args.get('logo'), disabled=disabled, mock=mock)
   if stream.type == 'plexamp':
     return Plexamp(name, args['client_id'], args['token'], disabled=disabled, mock=mock)
+  if stream.type == 'inputplayback':
+    return InputPlayback(name, args['optical'], disabled=disabled, mock=mock)
   if stream.type == 'fileplayer':
     return FilePlayer(name, args['url'], disabled=disabled, mock=mock)
   if stream.type == 'fmradio':
