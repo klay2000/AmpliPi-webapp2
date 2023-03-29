@@ -900,8 +900,10 @@ class InputPlayback(BaseStream):
 
     # Set input source
     print(f'setting input source to {"optical" if self.optical else "aux"}...')
-    subprocess.check_call(['amixer', '-D', 'usb71' 'set', "'PCM Capture Source',0", 'IEC958' if self.optical else 'Line'],
-                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    amixer_command = f'amixer -D usb71 set "PCM Capture Source" "{"IEC958 In" if self.optical else "Line"}"'
+
+    subprocess.check_call(amixer_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     # Start audio via runvlc.py
     vlc_args = f'cvlc -A alsa --alsa-audio-device {utils.output_device(src)} alsa://plughw:cmedia8chint,0 vlc://quit'
@@ -931,8 +933,9 @@ class InputPlayback(BaseStream):
 
   def info(self) -> models.SourceInfo:
     source = models.SourceInfo(name=self.full_name(),
+                               track="Optical" if self.optical else "Aux",
                                state=self.state,
-                               img_url=f'static/imgs/{"optical" if self.optical else "aux"}_in.png')
+                               img_url=f'static/imgs/{"optical" if self.optical else "aux"}_input.png')
     return source
 
 class FilePlayer(BaseStream):
