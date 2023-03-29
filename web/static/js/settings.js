@@ -11,7 +11,7 @@ class Stream {
   }
 }
 const STREAM_TYPES_ = {
-  inputplayback:  new Stream("inputplayback", "Input Playback"),
+  auxoptical:  new Stream("auxoptical", "AuxOptical"),
   airplay:        new Stream("airplay", "AirPlay Device"),
   dlna:           new Stream("dlna", "DLNA"),
   fmradio:        new Stream("fmradio", "FM Radio Station"),
@@ -170,12 +170,12 @@ $(function() {
           </div>
         `;
         break;
-      case STREAM_TYPES_.inputplayback:
+      case STREAM_TYPES_.auxoptical:
         html += `
           <div class="form-group">
             <input type="hidden" value="false" name="optical">
-            <input type="checkbox" name="optical" id="inputplayback_optical" value="true"${s.optical ? " checked" : ""} aria-describedby="opticalHelp" data-required="true">
-            <label for="inputplayback_optical">Optical</label>
+            <input type="checkbox" name="optical" id="auxoptical_optical" value="true"${s.optical ? " checked" : ""} aria-describedby="opticalHelp" data-required="true">
+            <label for="auxoptical_optical">Optical</label>
             <small id="opticalHelp" class="form-text text-muted">Check to make this Stream get input from optical in instead of aux. Only one can be used at a time.</small>
           </div>
         `;

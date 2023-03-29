@@ -202,15 +202,15 @@ class Api:
       self.status = models.Status.parse_obj(self.DEFAULT_CONFIG)
       self.save()
 
-    # make sure the config file contains the inputplayback stream
+    # make sure the config file contains the auxoptical stream
     has_stream = False
     for s in self.status.streams:
-      if s.type == "inputplayback":
+      if s.type == "auxoptical":
         has_stream = True
         break
 
     if not has_stream:
-      self.create_stream(models.Stream(type="inputplayback", name="Input Playback", optical=False))
+      self.create_stream(models.Stream(type="auxoptical", name="Aux/Optical", optical=False))
 
     # populate system info
     self._online_cache = utils.TimeBasedCache(self._check_is_online, 5, 'online')

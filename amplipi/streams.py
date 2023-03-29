@@ -865,10 +865,10 @@ class Plexamp(BaseStream):
     source.track = "Not currently supported"
     return source
 
-class InputPlayback(BaseStream):
+class AuxOptical(BaseStream):
   """ A stream to play from the aux/optical input. """
   def __init__(self, name: str, optical: bool, disabled: bool = False, mock: bool = False):
-    super().__init__('input playback', name, disabled=disabled, mock=mock)
+    super().__init__('aux/optical', name, disabled=disabled, mock=mock)
     self.optical = optical
     self.bkg_thread = None
 
@@ -1272,7 +1272,7 @@ class Bluetooth(BaseStream):
 
 # Simple handling of stream types before we have a type heirarchy
 AnyStream = Union[RCA, AirPlay, Spotify, InternetRadio, DLNA, Pandora, Plexamp,
-                  InputPlayback, FilePlayer, FMRadio, LMS, Bluetooth]
+                  AuxOptical, FilePlayer, FMRadio, LMS, Bluetooth]
 
 def build_stream(stream: models.Stream, mock=False) -> AnyStream:
   """ Build a stream from the generic arguments given in stream, discriminated by stream.type
@@ -1297,8 +1297,8 @@ def build_stream(stream: models.Stream, mock=False) -> AnyStream:
     return InternetRadio(name, args['url'], args.get('logo'), disabled=disabled, mock=mock)
   if stream.type == 'plexamp':
     return Plexamp(name, args['client_id'], args['token'], disabled=disabled, mock=mock)
-  if stream.type == 'inputplayback':
-    return InputPlayback(name, args['optical'], disabled=disabled, mock=mock)
+  if stream.type == 'auxoptical':
+    return AuxOptical(name, args['optical'], disabled=disabled, mock=mock)
   if stream.type == 'fileplayer':
     return FilePlayer(name, args['url'], disabled=disabled, mock=mock)
   if stream.type == 'fmradio':

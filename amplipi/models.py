@@ -465,7 +465,7 @@ class Stream(Base):
   * internetradio
   * spotify
   * plexamp
-  * inputplayback
+  * auxoptical
   * file
   * fmradio
   * lms
@@ -485,7 +485,7 @@ class Stream(Base):
   index: Optional[int] = Field(description='RCA index')
   disabled: Optional[bool] = Field(description="Soft disable use of this stream. It won't be shown as a selectable option")
   ap2: Optional[bool] = Field(description='Is Airplay stream AirPlay2?')
-  optical: Optional[bool] = Field(description='Is InputPlayback stream optical?')
+  optical: Optional[bool] = Field(description='Is Aux/Optical stream optical?')
 
   # add examples for each type of stream
   class Config:
@@ -651,7 +651,7 @@ class StreamUpdate(BaseUpdate):
   server: Optional[str]
   ap2: Optional[bool] = Field(description='Is Airplay stream AirPlay2?')
   disabled: Optional[bool] = Field(description="Soft disable use of this stream. It won't be shown as a selectable option")
-  optical: Optional[bool] = Field(description='Is InputPlayback stream optical?')
+  optical: Optional[bool] = Field(description='Is AuxOptical stream optical?')
 
   class Config:
     schema_extra = {

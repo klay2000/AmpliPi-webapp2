@@ -3,6 +3,7 @@
 ## Upcoming release
 * Streams
   * Add Bluetooth stream
+  * add Aux/Optical stream
 
 ## 0.2.1
 * System
