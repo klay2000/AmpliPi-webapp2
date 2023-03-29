@@ -11,7 +11,7 @@ class Stream {
   }
 }
 const STREAM_TYPES_ = {
-  auxoptical:  new Stream("auxoptical", "AuxOptical"),
+  auxoptical:  new Stream("auxoptical", "Aux/Optical"),
   airplay:        new Stream("airplay", "AirPlay Device"),
   dlna:           new Stream("dlna", "DLNA"),
   fmradio:        new Stream("fmradio", "FM Radio Station"),
