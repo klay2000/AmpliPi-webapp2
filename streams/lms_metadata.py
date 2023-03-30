@@ -52,36 +52,38 @@ class LMSMetadataReader:
       # print(f"Track Data: {track_data}")
 
 
-      tempjson = {}
+      meta = {
+        'title': 'Loading...',
+        'artist': 'Loading...',
+        'album': 'Loading...',
+        'album_art': 'static/imgs/lms.png'
+      }
 
       if song_data['type'] == "MP3 Radio" or song_data['type'] == "AAC Radio" or song_data['type'] == "Radio":
-        tempjson["title"] = track_data["title"]
-        tempjson['artist'] = None
-        tempjson['album'] = None
-        tempjson["album_art"] = f"http://{self.IP}:9000/music/{song_data['coverid']}/cover.jpg?id={song_data['coverid']}"
+        meta["title"] = track_data["title"]
+        meta['artist'] = None
+        meta['album'] = None
+        meta["album_art"] = f"http://{self.IP}:9000/music/{song_data['coverid']}/cover.jpg?id={song_data['coverid']}"
         print(f"http://{self.IP}:9000/music/cover.jpg?id={song_data['coverid']}")
 
       elif song_data['type'] == "MP3 (Pandora)":
         try:
-          tempjson["title"] = song_data["title"]
-          tempjson["artist"] = song_data["artist"]
-          tempjson["album"] = song_data["album"]
-          tempjson["album_art"] = song_data["artwork_url"]
+          meta["title"] = song_data["title"]
+          meta["artist"] = song_data["artist"]
+          meta["album"] = song_data["album"]
+          meta["album_art"] = song_data["artwork_url"]
           print(song_data["artwork_url"])
         except KeyError:
           print("KeyError, trying again in 2 seconds...")
 
-          tempjson["title"] = song_data["title"]
-          tempjson["artist"] = "Loading..."
-          tempjson["album"] = "Loading..."
-          tempjson["album_art"] = song_data["artwork_url"]
+          meta["title"] = song_data["title"]
+          meta["album_art"] = song_data["artwork_url"]
 
-      print(f"Temp: {tempjson}")
+      print(f"Temp: {meta}")
 
-      self.metadata = tempjson
+      self.metadata = meta
 
       time.sleep(self.meta_ref_rate)
-
 
 # print(lms.stream_name)
 # print(lms.get_metadata)
