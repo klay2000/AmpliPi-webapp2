@@ -1019,7 +1019,6 @@ class LMS(BaseStream):
   def __init__(self, name: str, server: Optional[str] = None, disabled: bool = False, mock: bool = False):
     super().__init__('lms', name, disabled=disabled, mock=mock)
     self.server : Optional[str] = server
-    self.metadata = LMSMetadataReader(name, 2)
 
   def reconfig(self, **kwargs):
     reconnect_needed = False
@@ -1051,6 +1050,7 @@ class LMS(BaseStream):
       os.system(f'mkdir -p {src_config_folder}')
 
       # TODO: Add metadata support? This may have to watch the output log?
+      self.metadata_reader = LMSMetadataReader(self.name, 2)
 
       # mac address, needs to be unique but not tied to actual NIC MAC hash the name with src id, to avoid aliases on move
       md5 = hashlib.md5()
@@ -1092,8 +1092,10 @@ class LMS(BaseStream):
     source = models.SourceInfo(
       name=self.full_name(),
       state=self.state,
-      img_url='static/imgs/lms.png',
-      track='check LMS for song info',
+      img_url= self.metadata_reader.metadata['album_art'],
+      track= self.metadata_reader.metadata['title'],
+      album= self.metadata_reader.metadata['album'],
+      artist= self.metadata_reader.metadata['artist']
     )
     return source
 

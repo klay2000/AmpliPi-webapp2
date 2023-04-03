@@ -83,6 +83,7 @@ class LMSMetadataReader:
         meta['artist'] = None
         meta['album'] = None
         meta["album_art"] = f"http://{self.IP}:9000/music/{song_data['coverid']}/cover.jpg?id={song_data['coverid']}"
+        # meta['album_art'] = 'static/imgs/lms.png'
         print(f"http://{self.IP}:9000/music/cover.jpg?id={song_data['coverid']}")
 
       elif song_data['type'] == "MP3 (Pandora)":
