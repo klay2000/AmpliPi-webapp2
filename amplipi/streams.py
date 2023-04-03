@@ -39,6 +39,7 @@ import hashlib # md5 for string -> MAC generation
 from amplipi import models
 from amplipi import utils
 from amplipi.mpris import MPRIS
+from streams.lms_metadata import LMSMetadataReader
 
 # We use Popen for long running process control this error is not useful:
 # pylint: disable=consider-using-with
@@ -1018,6 +1019,7 @@ class LMS(BaseStream):
   def __init__(self, name: str, server: Optional[str] = None, disabled: bool = False, mock: bool = False):
     super().__init__('lms', name, disabled=disabled, mock=mock)
     self.server : Optional[str] = server
+    self.metadata = LMSMetadataReader(name, 2)
 
   def reconfig(self, **kwargs):
     reconnect_needed = False
@@ -1037,7 +1039,7 @@ class LMS(BaseStream):
         self.connect(last_src)
 
   def connect(self, src):
-    """ Connect a sqeezelite output to a given audio source
+    """ Connect a squeezelite output to a given audio source
     This will create a LMS client based on the given name
     """
     if self.mock:
