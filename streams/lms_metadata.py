@@ -2,10 +2,8 @@
 """LMS Metadata"""
 
 import json
-import socket
 import time
 import requests
-import nmap
 
 class LMSMetadataReader:
   """A class for getting metadata from a Logitech Media Server."""
