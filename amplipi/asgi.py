@@ -24,7 +24,7 @@ This initializes the webapplication found in app.py.
 import os
 from multiprocessing import Process, Queue
 import uvicorn
-import amplipi.app
+from amplipi import app
 
 MOCK_CTRL = os.environ.get('MOCK_CTRL', 'False').lower() == 'true'
 MOCK_STREAMS = os.environ.get('MOCK_STREAMS', 'False').lower() == 'true'
@@ -32,12 +32,12 @@ MOCK_STREAMS = os.environ.get('MOCK_STREAMS', 'False').lower() == 'true'
 # When debugginq this will need to be set to 5000!
 PORT = int(os.environ.get('WEB_PORT', '80'))
 
-application = amplipi.app.create_app(delay_saves=True, mock_ctrl=MOCK_CTRL, mock_streams=MOCK_STREAMS)
+application = app.create_app(delay_saves=True, mock_ctrl=MOCK_CTRL, mock_streams=MOCK_STREAMS)
 
 # advertise the service here, to avoid adding bloat to underlying app, especially for test startup
 # this needs to be done as a separate process to avoid interfering with webserver (ZeroConf makes its own event loop)
 zc_que: "Queue[str]" = Queue()
-zc_reg = Process(target=amplipi.app.advertise_service, args=(PORT, zc_que))
+zc_reg = Process(target=app.advertise_service, args=(PORT, zc_que))
 zc_reg.start()
 
 @application.on_event('shutdown')

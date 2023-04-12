@@ -36,9 +36,9 @@ import signal
 import socket
 import hashlib # md5 for string -> MAC generation
 
+from amplipi.mpris import MPRIS
 from amplipi import models
 from amplipi import utils
-from amplipi.mpris import MPRIS
 from streams.lms_metadata import LMSMetadataReader
 
 # We use Popen for long running process control this error is not useful:
@@ -1019,6 +1019,7 @@ class LMS(BaseStream):
   def __init__(self, name: str, server: Optional[str] = None, disabled: bool = False, mock: bool = False):
     super().__init__('lms', name, disabled=disabled, mock=mock)
     self.server : Optional[str] = server
+    self.metadata_reader = LMSMetadataReader(self.name, 2)
 
   def reconfig(self, **kwargs):
     reconnect_needed = False
@@ -1026,6 +1027,7 @@ class LMS(BaseStream):
       self.disabled = kwargs['disabled']
     if 'name' in kwargs and kwargs['name'] != self.name:
       self.name = kwargs['name']
+      self.metadata_reader = LMSMetadataReader(self.name, 2)
       reconnect_needed = True
     if 'server' in kwargs and kwargs['server'] != self.server:
       self.server = kwargs['server']
@@ -1050,7 +1052,7 @@ class LMS(BaseStream):
       os.system(f'mkdir -p {src_config_folder}')
 
       # TODO: Add metadata support? This may have to watch the output log?
-      self.metadata_reader = LMSMetadataReader(self.name, 2)
+      # self.metadata_reader.get_IP()
 
       # mac address, needs to be unique but not tied to actual NIC MAC hash the name with src id, to avoid aliases on move
       md5 = hashlib.md5()
@@ -1079,12 +1081,17 @@ class LMS(BaseStream):
 
       self.proc = subprocess.Popen(args=lms_args)
       self._connect(src)
+
+
+      self.metadata_reader.get_IP()
+      self.metadata_reader.get_metadata()
     except Exception as exc:
       print(f'error starting lms: {exc}')
 
   def disconnect(self):
     if self._is_running():
       self.proc.kill()
+    self.metadata_reader.connected = False
     self._disconnect()
     self.proc = None
 
