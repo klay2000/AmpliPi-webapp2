@@ -1052,7 +1052,6 @@ class LMS(BaseStream):
       os.system(f'mkdir -p {src_config_folder}')
 
       # TODO: Add metadata support? This may have to watch the output log?
-      # self.metadata_reader.get_IP()
 
       # mac address, needs to be unique but not tied to actual NIC MAC hash the name with src id, to avoid aliases on move
       md5 = hashlib.md5()
@@ -1082,9 +1081,8 @@ class LMS(BaseStream):
       self.proc = subprocess.Popen(args=lms_args)
       self._connect(src)
 
+      self.metadata_reader.connect()
 
-      self.metadata_reader.get_IP()
-      self.metadata_reader.get_metadata()
     except Exception as exc:
       print(f'error starting lms: {exc}')
 
