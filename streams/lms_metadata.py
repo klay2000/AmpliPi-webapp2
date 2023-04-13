@@ -114,6 +114,7 @@ class LMSMetadataReader:
       self.metadata = meta
       print(f"Metadata: {meta}")
 
+      # Un-comment to debug: these will put all the JSON data into files so you can see what data is available to use from the LMS player
       # tr = open("trackraw.json", 'wt', encoding='utf-8')
       # json.dump(track_load, tr, indent = 2)
       # tp = open("trackparsed.json", 'wt', encoding='utf-8')
@@ -125,8 +126,7 @@ class LMSMetadataReader:
 
       time.sleep(self.meta_ref_rate)
 
-
+# Un-comment to debug: this will make a metadata reader and read it without involving the amplipi lms stream directly, if you name the metadata reader after the stream name then you'll
 # lms1 = LMSMetadataReader("Steve Test", 5)
 # lms1.get_IP()
 # lms1.get_metadata()
-# lms2 = LMSMetadataReader("Steve Test 2", 2)
