@@ -1051,8 +1051,6 @@ class LMS(BaseStream):
       src_config_folder = f'{utils.get_folder("config")}/srcs/{src}'
       os.system(f'mkdir -p {src_config_folder}')
 
-      # TODO: Add metadata support? This may have to watch the output log?
-
       # mac address, needs to be unique but not tied to actual NIC MAC hash the name with src id, to avoid aliases on move
       md5 = hashlib.md5()
       md5.update(self.name.encode('utf-8'))
@@ -1081,6 +1079,8 @@ class LMS(BaseStream):
       self.proc = subprocess.Popen(args=lms_args)
       self._connect(src)
 
+      # TODO: Add metadata support? This may have to watch the output log?
+      # At the end of the connect function becuase the LMS stream needs to be fully initialized before it starts searching for metadata or you won't be able to connect the player
       self.metadata_reader.connect()
 
     except Exception as exc:

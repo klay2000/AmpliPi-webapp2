@@ -1,3 +1,4 @@
+# TODO: remove this file
 SERVER="192.168.0.177"
 SERVERPORT="9000"
 MACADDR="0d:f8:99:b4:bb:65" # player "MAC"

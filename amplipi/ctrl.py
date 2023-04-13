@@ -34,7 +34,7 @@ import wrapt
 from amplipi import models
 from amplipi import rt
 from amplipi import utils
-from amplipi import streams
+import amplipi.streams
 
 _DEBUG_API = False # print out a graphical state of the api after each call
 
@@ -97,7 +97,7 @@ class Api:
   backup_config_file: str
   config_file_valid: bool
   status: models.Status
-  streams: Dict[int, streams.AnyStream]
+  streams: Dict[int, amplipi.streams.AnyStream]
 
   DEFAULT_CONFIG = { # This is the system state response that will come back from the amplipi box
     "sources": [ # this is an array of source objects, each has an id, name, type specifying whether source comes from a local (like RCA) or streaming input like pandora
@@ -263,20 +263,20 @@ class Api:
         self.status.streams.insert(idx, rca_stream)
 
     # configure all streams into a known state
-    self.streams: Dict[int, streams.AnyStream] = {}
+    self.streams: Dict[int, amplipi.streams.AnyStream] = {}
     failed_streams: List[int] = []
     for stream in self.status.streams:
       assert stream.id is not None
       if stream.id:
         try:
-          self.streams[stream.id] = streams.build_stream(stream, self._mock_streams)
+          self.streams[stream.id] = amplipi.streams.build_stream(stream, self._mock_streams)
         except Exception as exc:
           print(f"Failed to create '{stream.name}' stream: {exc}")
           failed_streams.append(stream.id)
     self._sync_stream_info() # need to update the status with the new streams
 
     # add/remove dynamic bluetooth stream
-    bt_streams = [sid for sid, stream in self.streams.items() if isinstance(stream, streams.Bluetooth)]
+    bt_streams = [sid for sid, stream in self.streams.items() if isinstance(stream, amplipi.streams.Bluetooth)]
     if streams.Bluetooth.is_hw_available():
       print('bluetooth dongle available')
       # make sure one stream is available
@@ -505,7 +505,7 @@ class Api:
       items = self.get_state().__dict__[plural_tag]
     return items
 
-  def get_stream(self, src: Optional[models.Source] = None, sid: Optional[int] = None) -> Optional[streams.AnyStream]:
+  def get_stream(self, src: Optional[models.Source] = None, sid: Optional[int] = None) -> Optional[amplipi.streams.AnyStream]:
     """Gets the stream from a source
 
     Args:
@@ -867,7 +867,7 @@ class Api:
       if not internal and data.type == 'rca':
         raise Exception(f'Unable to create protected RCA stream, the RCA streams for each RCA input {RCAs} already exist')
       # Make a new stream and add it to streams
-      stream = streams.build_stream(data, mock=self._mock_streams)
+      stream = amplipi.streams.build_stream(data, mock=self._mock_streams)
       sid = self._new_stream_id()
       self.streams[sid] = stream
       self._sync_stream_info()
@@ -904,7 +904,7 @@ class Api:
     """Deletes an existing stream"""
     try:
       # RCA streams are intrinsic to the hardware and can't be removed
-      if sid in RCAs and isinstance(self.streams[sid], streams.RCA):
+      if sid in RCAs and isinstance(self.streams[sid], amplipi.streams.RCA):
         msg = f'Protected stream {sid} cannot be removed, use disabled=True to hide it'
         raise Exception(msg)
       # if input is connected to a source change that input to nothing
