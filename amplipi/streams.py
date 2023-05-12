@@ -1195,7 +1195,7 @@ class LMS(PersistentStream):
     )
     return source
 
-class Bluetooth(BaseStream):
+class Bluetooth(PersistentStream):
   """ A source for Bluetooth streams, which requires an external Bluetooth USB dongle """
 
   def __init__(self, name, disabled=False, mock=False):
@@ -1221,12 +1221,12 @@ class Bluetooth(BaseStream):
       print(f'Error checking for bluetooth hardware: {e}')
       return False
 
-  def connect(self, src):
+  def _activate(self, vsrc):
     """ Connect a bluealsa-aplay process with audio output to a given audio source """
-    print(f'connecting {self.name} to {src}...')
+    print(f'connecting {self.name} to {vsrc}...')
 
     if self.mock:
-      self._connect(src)
+      self._connect(vsrc)
       return
 
     # Power on Bluetooth and enable discoverability
@@ -1235,15 +1235,15 @@ class Bluetooth(BaseStream):
     subprocess.run(args='sudo btmgmt fast-conn on'.split(), preexec_fn=os.setpgrp)
 
     # Start metadata watcher
-    src_config_folder = f"{utils.get_folder('config')}/srcs/{src}"
+    src_config_folder = f"{utils.get_folder('config')}/srcs/{vsrc}"
     os.system(f'mkdir -p {src_config_folder}')
     song_info_path = f'{src_config_folder}/currentSong'
     device_info_path = f'{src_config_folder}/btDevice'
     btmeta_args = f'{sys.executable} {utils.get_folder("streams")}/bluetooth.py --song-info={song_info_path} ' \
-                  f'--device-info={device_info_path} --output-device={utils.output_device(src)}'
+                  f'--device-info={device_info_path} --output-device={utils.virtual_output_device(vsrc)}'
     self.bt_proc = subprocess.Popen(args=btmeta_args.split(), preexec_fn=os.setpgrp)
 
-    self._connect(src)
+    self._connect(vsrc)
     return
 
   def _is_running(self):
@@ -1251,7 +1251,7 @@ class Bluetooth(BaseStream):
       return self.bt_proc.poll() is None
     return False
 
-  def disconnect(self):
+  def _deactivate(self):
     if self._is_running():
       os.killpg(os.getpgid(self.bt_proc.pid), signal.SIGKILL)
       self.bt_proc = None
@@ -1263,7 +1263,7 @@ class Bluetooth(BaseStream):
       self._disconnect()
 
   def info(self) -> models.SourceInfo:
-    src_config_folder = f"{utils.get_folder('config')}/srcs/{self.src}"
+    src_config_folder = f"{utils.get_folder('config')}/srcs/{self.vsrc}"
     loc = f'{src_config_folder}/currentSong'
     source = models.SourceInfo(name=self.full_name(),
                                state=self.state,
@@ -1285,8 +1285,8 @@ class Bluetooth(BaseStream):
   def send_cmd(self, cmd):
     print(f'bluetooth: sending command {cmd}')
     try:
-      if cmd in self.supported_cmds and self.src is not None:
-        src_config_folder = f"{utils.get_folder('config')}/srcs/{self.src}"
+      if cmd in self.supported_cmds and self.vsrc is not None:
+        src_config_folder = f"{utils.get_folder('config')}/srcs/{self.vsrc}"
         device_info_path = f'{src_config_folder}/btDevice'
         btcmd_args = f'{sys.executable} {utils.get_folder("streams")}/bluetooth.py --command={cmd} --device-info={device_info_path}'
         subprocess.run(args=btcmd_args.split(), preexec_fn=os.setpgrp)
@@ -1295,7 +1295,6 @@ class Bluetooth(BaseStream):
     except Exception as e:
       print(f'bluetooth: exception {e}')
       raise RuntimeError(f'Command {cmd} failed to send: {e}') from e
-      traceback.print_exc()
 
 # Simple handling of stream types before we have a type heirarchy
 AnyStream = Union[RCA, AirPlay, Spotify, InternetRadio, DLNA, Pandora, Plexamp,
